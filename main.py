@@ -9,8 +9,8 @@ st.title("🚛 Tır Sevkiyat ve Taban Alanı Hesaplama")
 # 1. Excel Dosyasını Yükleme / Okuma
 @st.cache_data
 def load_data():
-    # Excel dosya adınızı buraya yazın (Örn: 'urunler.xlsx')
-    df = pd.read_excel("urunler.xlsx")
+    # Güncel Excel dosyanızın adı
+    df = pd.read_excel("kasalar.xlsx")
     return df
 
 try:
@@ -33,14 +33,16 @@ for idx, row in df_urunler.iterrows():
     urun_kodu = row.get('Ürün Kodu', f"Ürün {idx+1}")
     en_cm = row.get('En (cm)', 0)
     boy_cm = row.get('Boy (cm)', 0)
-    max_kat = row.get('Max Kat', 1)
+    
+    # Excel'deki max_kat sütunu okuma
+    max_kat = row.get('max_kat', 1)
     
     # Varsayılan Max Kat kontrolü (Eğer boşsa veya 0 ise 1 kabul et)
     if pd.isna(max_kat) or max_kat <= 0:
         max_kat = 1
 
     adet = st.sidebar.number_input(
-        f"{urun_kodu} (Max Kat: {max_kat})", 
+        f"{urun_kodu} (Max Kat: {int(max_kat)})", 
         min_value=0, 
         value=0, 
         step=1, 
@@ -52,7 +54,7 @@ for idx, row in df_urunler.iterrows():
             "Ürün Kodu": urun_kodu,
             "En (cm)": en_cm,
             "Boy (cm)": boy_cm,
-            "Max Kat": int(max_kat),
+            "max_kat": int(max_kat),
             "Adet": adet
         })
 
@@ -66,14 +68,14 @@ if secilen_urunler:
     for _, row in df_secilen.iterrows():
         en_m = row["En (cm)"] / 100.0
         boy_m = row["Boy (cm)"] / 100.0
-        max_kat = row["Max Kat"]
+        max_kat = row["max_kat"]
         adet = row["Adet"]
         
         # 1 Kasanın tabanda kapladığı m²
         kasa_taban_m2 = en_m * boy_m
         
         # İstif katına göre tır tabanında kaplanan kasa yeri sayısı
-        # Örn: 16 adet kasa, Max Kat 2 ise -> Tabanda 8 kasa yeri gerekir
+        # Örn: 16 adet kasa, max_kat 2 ise -> Tabanda 8 kasa yeri gerekir
         taban_kasa_adedi = math.ceil(adet / max_kat)
         
         # Bu ürünün kapladığı toplam taban alanı
