@@ -10,7 +10,7 @@ st.title("🚛 Tır / Dorse Sevkiyat ve Taban Alanı Hesaplama")
 @st.cache_data
 def load_data():
     # Excel dosya adınız
-    df = pd.read_excel("kasalar.xlsx")
+    df = pd.read_excel("kasalar1.xlsx")
     return df
 
 try:
@@ -71,7 +71,7 @@ for idx, row in df_urunler.iterrows():
 if secilen_urunler:
     df_secilen = pd.DataFrame(secilen_urunler)
     
-    # Boyutları (En, Boy) ve Max Kat değerleri AYNİ olan kasaları grupluyoruz
+    # Boyutları (En, Boy) ve Max Kat değerleri AYNI olan kasaları grupluyoruz
     gruplanmis = df_secilen.groupby(['en', 'boy', 'max_kat'])
     
     toplam_gerekli_taban_m2 = 0.0
@@ -88,7 +88,7 @@ if secilen_urunler:
         kasa_taban_m2 = en_m * boy_m
         
         # Aynı boyuttaki kasalar kendi içinde birleştirilerek üst üste diziliyor
-        taban_kasa_adedi = math.ceil(toplam_gerekli_taban_m2_grup := toplam_grup_adedi / max_kat)
+        taban_kasa_adedi = math.ceil(toplam_grup_adedi / max_kat)
         
         # Grubun toplam taban alanı
         grup_taban_m2 = taban_kasa_adedi * kasa_taban_m2
@@ -104,20 +104,25 @@ if secilen_urunler:
         })
 
     doluluk_yuzdesi = (toplam_gerekli_taban_m2 / TIR_TABAN_ALANI_M2) * 100
-    kalan_taban_m2 = TIR_TABAN_ALANI_M2 - toplam_gerekli_taban_m2
+    kalan_taban_m2 = max(0.0, TIR_TABAN_ALANI_M2 - toplam_gerekli_taban_m2)
+    
+    # 📏 Tırın arkasında kalan boylamasına boşluk hesabı (Metre ve CM cinsinden)
+    kalan_boy_metre = kalan_taban_m2 / TIR_EN_M
+    kalan_boy_cm = round(kalan_boy_metre * 100)
 
     # 4. Sonuçları Ekrana Yazdırma
     st.subheader(f"📊 Sevkiyat Doluluk Özet Raporu ({secilen_arac_adi})")
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     col1.metric("Araç Doluluk Oranı", f"%{round(doluluk_yuzdesi, 1)}")
     col2.metric("Kullanılan Taban Alanı", f"{round(toplam_gerekli_taban_m2, 2)} m²")
-    col3.metric("Kalan Taban Alanı", f"{round(max(0.0, kalan_taban_m2), 2)} m²")
+    col3.metric("Kalan Taban Alanı", f"{round(kalan_taban_m2, 2)} m²")
+    col4.metric("Kalan Boylamasına Boşluk", f"{kalan_boy_cm} cm", f"{round(kalan_boy_metre, 2)} m")
 
     if doluluk_yuzdesi > 100:
         st.error(f"⚠️ DİKKAT: Seçilen yükler {secilen_arac_adi} taban alanını %{round(doluluk_yuzdesi - 100, 1)} oranında aşıyor!")
     else:
-        st.success(f"✅ Seçilen ürünler {secilen_arac_adi} taban alanına sorunsuz sığıyor.")
+        st.success(f"✅ Seçilen ürünler sığıyor. Tır kapısında arkada kalan net boşluk: **{kalan_boy_cm} cm** ({round(kalan_boy_metre, 2)} metre)")
 
     st.write("---")
     st.subheader("📋 Gruplandırılmış İstifleme Detay Listesi")
