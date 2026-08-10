@@ -9,7 +9,7 @@ st.title("🚛 Tır Sevkiyat ve Taban Alanı Hesaplama")
 # 1. Excel Dosyasını Yükleme / Okuma
 @st.cache_data
 def load_data():
-    # Güncel Excel dosyanızın adı
+    # Excel dosya adınız (Gerekirse 'kasalar1.xlsx' veya 'kasalar.xlsx' olarak düzenleyebilirsiniz)
     df = pd.read_excel("kasalar.xlsx")
     return df
 
@@ -30,11 +30,10 @@ secilen_urunler = []
 
 # Excel'deki ürünleri listeden seçme ve adet girme
 for idx, row in df_urunler.iterrows():
-    urun_kodu = row.get('Ürün Kodu', f"Ürün {idx+1}")
-    en_cm = row.get('En (cm)', 0)
-    boy_cm = row.get('Boy (cm)', 0)
-    
-    # Excel'deki max_kat sütunu okuma
+    # Excel sütun isimlerinizle birebir eşleştirildi:
+    kasa_kodu = row.get('kasa_kodu', f"Kasa {idx+1}")
+    en_cm = row.get('en', 0)
+    boy_cm = row.get('boy', 0)
     max_kat = row.get('max_kat', 1)
     
     # Varsayılan Max Kat kontrolü (Eğer boşsa veya 0 ise 1 kabul et)
@@ -42,7 +41,7 @@ for idx, row in df_urunler.iterrows():
         max_kat = 1
 
     adet = st.sidebar.number_input(
-        f"{urun_kodu} (Max Kat: {int(max_kat)})", 
+        f"{kasa_kodu} (Max Kat: {int(max_kat)})", 
         min_value=0, 
         value=0, 
         step=1, 
@@ -51,9 +50,9 @@ for idx, row in df_urunler.iterrows():
     
     if adet > 0:
         secilen_urunler.append({
-            "Ürün Kodu": urun_kodu,
-            "En (cm)": en_cm,
-            "Boy (cm)": boy_cm,
+            "kasa_kodu": kasa_kodu,
+            "en": en_cm,
+            "boy": boy_cm,
             "max_kat": int(max_kat),
             "Adet": adet
         })
@@ -66,8 +65,8 @@ if secilen_urunler:
     ozet_liste = []
 
     for _, row in df_secilen.iterrows():
-        en_m = row["En (cm)"] / 100.0
-        boy_m = row["Boy (cm)"] / 100.0
+        en_m = row["en"] / 100.0
+        boy_m = row["boy"] / 100.0
         max_kat = row["max_kat"]
         adet = row["Adet"]
         
@@ -83,7 +82,7 @@ if secilen_urunler:
         toplam_gerekli_taban_m2 += urun_toplam_taban_m2
 
         ozet_liste.append({
-            "Ürün Kodu": row["Ürün Kodu"],
+            "Kasa Kodu": row["kasa_kodu"],
             "Toplam Adet": adet,
             "Max Kat": max_kat,
             "Tabanda Kapladığı Kasa Yeri": taban_kasa_adedi,
