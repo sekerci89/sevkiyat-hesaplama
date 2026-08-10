@@ -10,7 +10,7 @@ st.title("🚛 Tır / Dorse Sevkiyat ve Taban Alanı Hesaplama")
 @st.cache_data
 def load_data():
     # Excel dosya adınız
-    df = pd.read_excel("kasalar1.xlsx")
+    df = pd.read_excel("kasalar.xlsx")
     return df
 
 try:
