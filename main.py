@@ -6,10 +6,8 @@ st.set_page_config(page_title="Tır Sevkiyat Hesabı", layout="wide")
 
 st.title("🚛 Tır / Dorse Sevkiyat ve Taban Alanı Hesaplama")
 
-# 1. Excel Dosyasını Yükleme / Okuma
-@st.cache_data
+# 1. Excel Dosyasını Yükleme / Okuma (Önbellek kaldırıldı, her açılışta güncel Excel'i okur)
 def load_data():
-    # Excel dosya adınız
     df = pd.read_excel("kasalar.xlsx")
     return df
 
@@ -71,7 +69,6 @@ for idx, row in df_urunler.iterrows():
 if secilen_urunler:
     df_secilen = pd.DataFrame(secilen_urunler)
     
-    # Boyutları (En, Boy) ve Max Kat değerleri AYNI olan kasaları grupluyoruz
     gruplanmis = df_secilen.groupby(['en', 'boy', 'max_kat'])
     
     toplam_gerekli_taban_m2 = 0.0
@@ -84,13 +81,9 @@ if secilen_urunler:
         en_m = en_cm / 100.0
         boy_m = boy_cm / 100.0
         
-        # 1 Kasanın tabanda kapladığı m²
         kasa_taban_m2 = en_m * boy_m
-        
-        # Aynı boyuttaki kasalar kendi içinde birleştirilerek üst üste diziliyor
         taban_kasa_adedi = math.ceil(toplam_grup_adedi / max_kat)
         
-        # Grubun toplam taban alanı
         grup_taban_m2 = taban_kasa_adedi * kasa_taban_m2
         toplam_gerekli_taban_m2 += grup_taban_m2
 
@@ -106,7 +99,6 @@ if secilen_urunler:
     doluluk_yuzdesi = (toplam_gerekli_taban_m2 / TIR_TABAN_ALANI_M2) * 100
     kalan_taban_m2 = max(0.0, TIR_TABAN_ALANI_M2 - toplam_gerekli_taban_m2)
     
-    # 📏 Tırın arkasında kalan boylamasına boşluk hesabı (Metre ve CM cinsinden)
     kalan_boy_metre = kalan_taban_m2 / TIR_EN_M
     kalan_boy_cm = round(kalan_boy_metre * 100)
 
